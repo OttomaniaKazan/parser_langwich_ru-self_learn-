@@ -23,9 +23,9 @@ def sections_parse() -> dict:
               f'Cсылка на категорию https://langwitch.ru/wordsets/{clear_url_attr}')
     return sections_dict
 
-def parse_section(section) -> dict:
+def parse_section(category) -> dict:
     """ Получение словаря {Ru:En} для каждой категории """
-    new_url = f'https://langwitch.ru/wordsets/{section}'
+    new_url = f'https://langwitch.ru/wordsets/{category}'
     data_text = fetch_page(new_url)
     soup = BeautifulSoup(data_text, 'html.parser')
     sections = soup.find_all('div', class_='word_row')
@@ -38,7 +38,7 @@ def parse_section(section) -> dict:
         text_ru = section.find('div', class_='word_row_ru').get_text(strip=True).capitalize()
         ru_en_words[text_ru] = clear_text_en
         count += 1
-    print(f'Найдено {count} слов для категории {section}(техническое название)')
+    print(f'Найдено {count} слов для категории {category}(техническое название)')
     return ru_en_words
 
 def full_parser() -> dict:
