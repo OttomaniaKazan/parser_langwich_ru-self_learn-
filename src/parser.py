@@ -23,6 +23,22 @@ def sections_parse() -> dict:
               f'Cсылка на категорию https://langwitch.ru/wordsets/{clear_url_attr}')
     return sections_dict
 
+def normalize_key(text) -> str:
+    """ Преобразуем ключ максимум до двух слов """
+    text_list = text.split()
+    normal_size = text_list[:3]
+    normal_text = ' '.join(normal_size).strip().capitalize()
+    return normal_text
+
+def check_duplicates(text) -> bool:
+    """ Удаляем дубликаты ключей """
+    key_seen = set()
+    if text in key_seen:
+        return True
+    else:
+        key_seen.add(text)
+        return False
+
 def parse_section(category) -> dict:
     """ Получение словаря {Ru:En} для каждой категории """
     new_url = f'https://langwitch.ru/wordsets/{category}'
@@ -36,9 +52,11 @@ def parse_section(category) -> dict:
         erase_text_en = section.find('div', class_='word_row_transcription').get_text()
         clear_text_en = text_en.replace(erase_text_en, '')
         text_ru = section.find('div', class_='word_row_ru').get_text(strip=True).capitalize()
-        ru_en_words[text_ru] = clear_text_en
-        count += 1
-    print(f'Найдено {count} слов для категории {category}(техническое название)')
+        normal_text_ru = normalize_key(text_ru)
+        if not check_duplicates(normal_text_ru):
+            ru_en_words[normal_text_ru] = clear_text_en
+            count += 1
+    print(f'Найдено {count} слов.')
     return ru_en_words
 
 def full_parser() -> dict:
