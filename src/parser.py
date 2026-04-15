@@ -30,15 +30,6 @@ def normalize_key(text) -> str:
     normal_text = ' '.join(normal_size).strip().capitalize()
     return normal_text
 
-def check_duplicates(text) -> bool:
-    """ Удаляем дубликаты ключей """
-    key_seen = set()
-    if text in key_seen:
-        return True
-    else:
-        key_seen.add(text)
-        return False
-
 def parse_section(category) -> dict:
     """ Получение словаря {Ru:En} для каждой категории """
     new_url = f'https://langwitch.ru/wordsets/{category}'
@@ -53,9 +44,14 @@ def parse_section(category) -> dict:
         clear_text_en = text_en.replace(erase_text_en, '')
         text_ru = section.find('div', class_='word_row_ru').get_text(strip=True).capitalize()
         normal_text_ru = normalize_key(text_ru)
-        if not check_duplicates(normal_text_ru):
+
+        # Убираем дубликаты ключей без учета категорий
+        key_seen = set()
+        if normal_text_ru not in key_seen:
             ru_en_words[normal_text_ru] = clear_text_en
+            key_seen.add(normal_text_ru)
             count += 1
+
     print(f'Найдено {count} слов.')
     return ru_en_words
 
