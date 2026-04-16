@@ -24,18 +24,19 @@ def sections_parse() -> dict:
     return sections_dict
 
 def normalize_key(text) -> str:
-    """ Преобразуем ключ максимум до двух слов """
+    """ Преобразуем ключ максимум до трех слов """
     text_list = text.split()
     normal_size = text_list[:3]
     normal_text = ' '.join(normal_size).strip().capitalize()
     return normal_text
 
-def parse_section(category) -> dict:
+def parse_section(category, seen_keys) -> tuple:
     """ Получение словаря {Ru:En} для каждой категории """
     new_url = f'https://langwitch.ru/wordsets/{category}'
     data_text = fetch_page(new_url)
     soup = BeautifulSoup(data_text, 'html.parser')
     sections = soup.find_all('div', class_='word_row')
+    data_set = []
     ru_en_words = {}
     count = 0
     for section in sections:
@@ -46,22 +47,22 @@ def parse_section(category) -> dict:
         normal_text_ru = normalize_key(text_ru)
 
         # Убираем дубликаты ключей без учета категорий
-        key_seen = set()
-        if normal_text_ru not in key_seen:
+        if normal_text_ru not in seen_keys:
             ru_en_words[normal_text_ru] = clear_text_en
-            key_seen.add(normal_text_ru)
+            seen_keys.add(normal_text_ru)
             count += 1
 
     print(f'Найдено {count} слов.')
-    return ru_en_words
+    return ru_en_words, seen_keys
 
 def full_parser() -> dict:
     """ Получение полного словаря слов, разбитого по категориям"""
 
     all_dict = {}
+    seen_keys = set()
     sections = sections_parse()
     for category, section in sections.items():
-        all_dict[category] = parse_section(section)
+        all_dict[category], seen_keys = parse_section(section, seen_keys)
         print(f'Добавлен словарь для категории {category}')
     print('Парсинг выполнен!')
     return all_dict
